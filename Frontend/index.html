@@ -1,6 +1,53 @@
-<!DOCTYPE html>
-<html>
-    <h1>
-        Nombre de la pagina. 
-    </h1>
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>El Tomate Sabio</title>
+  <style>
+    html,body{height:100%;margin:0}
+    body{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#ffffff;
+      font-family: "Cooper Black", "Arial Black", Gadget, sans-serif;
+    }
+    h1{
+      font-family: inherit;
+      font-size:8rem;
+      background:#b41b1b;
+      color:#ffffff;
+      padding:1rem 2rem;
+      border-radius:8px;
+      margin:0;
+      line-height:1;
+      text-align:center;
+      text-transform:none;
+    }
+    @media (max-width:600px){
+      h1{font-size:3.5rem;padding:0.5rem 1rem}
+    }
+  </style>
+</head>
+<body>
+  
+  <h1>El Tomate Sabio</h1>
+  </div>
+
+  <div>
+  <button onclick="getData()">Consultar API</button>
+  <p id="output"></p>
+  </div>
+
+  <script>
+    function getData() {
+      fetch('/api/data')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("output").innerText = data.message;
+        });
+    }
+  </script>
+</body>
 </html>
