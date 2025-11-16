@@ -1,7 +1,10 @@
 version: '3.8'
 services:
+#Le colocamos nombre a nuestro contenedor como Pomodoro_Web
   Pomodoro_Web:
-    build: ./frontend
+#Se crea una imagen a partir de la imagen del archivo Dockerfile de la carpeta Frontend
+    build: .
+    # Mapear puertos.
     ports:
       - "8080:80"
     restart: unlesss-stopped
