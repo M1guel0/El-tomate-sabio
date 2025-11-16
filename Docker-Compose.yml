@@ -1,40 +1,16 @@
 version: '3.8'
-
 services:
-  backend:
-    build: ./backend
-    environment:
-      POSTGRES_DB: appdb
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-    depends_on:
-      - db
-    networks:
-      - appnet
-
-  frontend:
+  Pomodoro_Web:
     build: ./frontend
     ports:
       - "8080:80"
-    depends_on:
-      - backend
+    restart: unlesss-stopped
     networks:
-      - appnet
-
-  db:
-    image: postgres:15
-    restart: always
-    environment:
-      POSTGRES_DB: appdb
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-    volumes:
-      - db_data:/var/lib/postgresql/data
-    networks:
-      - appnet
-
+      - Pomodoro-networks
 networks:
-  appnet:
+  pomodoro-networks:
+    driver: bridge 
+    
 
-volumes:
-  db_data:
+
+
