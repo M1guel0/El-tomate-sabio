@@ -1,0 +1,26 @@
+
+    html,body{height:100%;margin:0}
+    body{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#ffffff;
+      font-family: "Cooper Black", "Arial Black", Gadget, sans-serif;
+    }
+
+    h1{
+      font-family: inherit;
+      font-size:8rem;
+      background:#b41b1b;
+      color:#ffffff;
+      padding:1rem 2rem;
+      border-radius:8px;
+      margin:0;
+      line-height:1;
+      text-align:center;
+      text-transform:none;
+    }
+    
+    @media (max-width:600px){
+      h1{font-size:3.5rem;padding:0.5rem 1rem}
+    }

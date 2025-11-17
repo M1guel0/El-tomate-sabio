@@ -1,6 +1,6 @@
 version: '3.9'
 services:
-#Le colocamos nombre a nuestro contenedor como Pomodoro_Web
+#Le colocamos nombre a nuestro contenedor como pomodoroweb
   pomodoroweb:
 #Se crea una imagen a partir de la imagen del archivo Dockerfile de la carpeta Frontend
     build:
