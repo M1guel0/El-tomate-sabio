@@ -1,0 +1,27 @@
+pipeline {   					(Define un pipeline declarativo)
+    agent any				 	(Usa cualquier agente disponible)
+    environment {  				(Variables de entorno del pipeline)
+        DOCKER_HOST = 'unix:///var/run/docker.sock'
+    }
+    stages {
+        stage('Construir contenedores') { 		(Construye imágenes Docker)
+            steps {
+                sh 'docker-compose build'
+            }
+        }
+/*
+        stage('Ejecutar pruebas') {  		(Ejecuta tests unitarios pero está en comentario)
+            steps {
+                sh 'docker-compose run --rm web python -m unittest discover tests'
+            }
+        }
+*/
+        stage('Desplegar') { 			(Levanta los servicios con Docker Compose)
+ 
+            steps {
+                sh 'docker-compose up -d'
+            }
+        }
+    }
+}
+
