@@ -1,31 +1,88 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>El Tomate Sabio</title>
-  <link rel="stylesheet" href="Styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Timer - Gestiona tu Tiempo</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  
-  <h1>El Tomate Sabio</h1>
-  </div>
+    <div class="container">
+        <header>
+            <h1>🍅 Técnica Pomodoro</h1>
+            <p>Gestiona tu tiempo eficientemente</p>
+        </header>
 
-  <div>
-  <button onclick="getData()">Consultar API</button>
-  <p id="output"></p>
-  </div>
+        <main>
+            <!-- Sección del Temporizador -->
+            <section class="timer-section">
+                <div class="timer-display">
+                    <div class="time" id="time">25:00</div>
+                    <div class="session-info" id="sessionInfo">Sesión de Trabajo</div>
+                </div>
 
-  <script>
-    function getData() {
-      fetch('/api/data')
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById("output").innerText = data.message;
-        });
-    }
-  </script>
+                <div class="timer-controls">
+                    <button id="startBtn" class="btn btn-primary">Comenzar</button>
+                    <button id="pauseBtn" class="btn btn-secondary">Pausar</button>
+                    <button id="resetBtn" class="btn btn-secondary">Reiniciar</button>
+                    <button id="skipBtn" class="btn btn-outline">Saltar</button>
+                </div>
 
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress" id="progress"></div>
+                    </div>
+                    <div class="pomodoro-count">
+                        Pomodoros completados: <span id="pomodoroCount">0</span>
+                    </div>
+                </div>
 
+                <div class="settings">
+                    <div class="setting-group">
+                        <label>Trabajo (min):</label>
+                        <input type="number" id="workTime" value="25" min="1" max="60">
+                    </div>
+                    <div class="setting-group">
+                        <label>Descanso (min):</label>
+                        <input type="number" id="breakTime" value="5" min="1" max="30">
+                    </div>
+                    <div class="setting-group">
+                        <label>Descanso Largo (min):</label>
+                        <input type="number" id="longBreakTime" value="15" min="1" max="60">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección de Lista de Tareas -->
+            <section class="todo-section">
+                <h2>📝 Lista de Tareas</h2>
+                
+                <div class="todo-input">
+                    <input type="text" id="todoInput" placeholder="Agregar nueva tarea...">
+                    <button id="addTodoBtn" class="btn btn-primary">Agregar</button>
+                </div>
+
+                <div class="filters">
+                    <button class="filter-btn active" data-filter="all">Todas</button>
+                    <button class="filter-btn" data-filter="pending">Pendientes</button>
+                    <button class="filter-btn" data-filter="completed">Completadas</button>
+                </div>
+
+                <ul class="todo-list" id="todoList">
+                    <!-- Las tareas se agregarán aquí dinámicamente -->
+                </ul>
+
+                <div class="todo-stats">
+                    <span id="pendingCount">0 tareas pendientes</span>
+                    <button id="clearCompleted" class="btn btn-outline">Limpiar Completadas</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Notificación -->
+    <div id="notification" class="notification"></div>
+
+    <script src="script.js"></script>
 </body>
 </html>
