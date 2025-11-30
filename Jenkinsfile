@@ -19,7 +19,7 @@ pipeline {
                 script {
                     echo ' Construyendo la imagen de Docker...'
                     // Usamos el docker-compose que ya tienes configurado
-                    sh 'docker-compose build pomodoroweb'
+                    sh 'docker compose build pomodoroweb'
                 }
             }
         }
@@ -35,7 +35,7 @@ pipeline {
                     
                     echo ' Desplegando el nuevo contenedor...'
                     // Levanta el nuevo contenedor
-                    sh 'docker compose up -d pomodoroweb'
+                    sh 'docker-compose up -d pomodoroweb'
                 }
             }
         }
