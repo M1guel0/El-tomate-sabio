@@ -2,26 +2,51 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_HOST = 'unix:///var/run/docker.sock'
+        // Aseguramos que el path incluya binarios comunes
+        PATH = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
     }
 
     stages {
-        stage('Construir contenedores') {
+        stage('Checkout SCM') {
             steps {
-                sh 'docker-compose build'
+                // Jenkins descarga automáticamente el código de GitHub
+                checkout scm
             }
         }
-/*
-        stage('Ejecutar pruebas') {
+
+        stage('Construcción (Build)') {
             steps {
-                sh 'docker-compose run --rm web python -m unittest discover tests'
+                script {
+                    echo '🏗️ Construyendo la imagen de Docker...'
+                    // Usamos el docker-compose que ya tienes configurado
+                    sh 'docker compose build pomodoroweb'
+                }
             }
         }
-*/
-        stage('Desplegar') {
+
+        stage('Despliegue (Deploy)') {
             steps {
-                sh 'docker-compose up -d'
+                script {
+                    echo 'Deteniendo y eliminando contenedores antiguos...'
+                    // Detener y eliminar el servicio 'pomodoroweb' si existe
+                    // Usamos || true para que el pipeline no falle si el contenedor no existe
+                    sh 'docker compose stop pomodoroweb || true' 
+                    sh 'docker compose rm -f pomodoroweb || true'
+
+                    echo 'Desplegando el nuevo contenedor...'
+                    // Levanta el nuevo contenedor
+                    sh 'docker compose up -d pomodoroweb'
+                }
             }
+        }
+    }
+    
+    post {
+        success {
+            echo '✅ ¡Despliegue exitoso!'
+        }
+        failure {
+            echo ' Algo salió mal en el pipeline.'
         }
     }
 }
