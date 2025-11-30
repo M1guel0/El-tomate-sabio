@@ -27,15 +27,19 @@ pipeline {
         stage('Despliegue (Deploy)') {
             steps {
                 script {
-                    echo ' Deteniendo y eliminando contenedores antiguos...'
-                    // Detener y eliminar el servicio 'pomodoroweb' si existe
-                    // Usamos || true para que el pipeline no falle si el contenedor no existe
+                    echo '🛑 Deteniendo y eliminando contenedores antiguos...'
+                    // Detener el contenedor
                     sh 'docker compose stop pomodoroweb || true' 
+                    // Eliminar el contenedor
                     sh 'docker compose rm -f pomodoroweb || true' 
                     
-                    echo ' Desplegando el nuevo contenedor...'
+                    echo '⏳ Esperando 2 segundos para liberar el puerto 8082...'
+                    // Añadimos una espera para garantizar que el sistema libere el puerto
+                    sh 'sleep 2' 
+                    
+                    echo '🚀 Desplegando el nuevo contenedor...'
                     // Levanta el nuevo contenedor
-                    sh 'docker-compose up -d pomodoroweb'
+                    sh 'docker compose up -d pomodoroweb'
                 }
             }
         }
