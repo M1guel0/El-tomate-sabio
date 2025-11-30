@@ -24,17 +24,21 @@ pipeline {
             }
         }
 
-        stage('Despliegue (Deploy)') {
+    stage('Despliegue (Deploy)') {
             steps {
                 script {
-                    echo 'Desplegando la aplicación...'
-                    // Levanta el contenedor en modo "detached" (-d)
-                    // --force-recreate asegura que tome los cambios de la nueva imagen
-                    sh 'docker compose up -d --force-recreate pomodoroweb'
+                    echo 'Deteniendo y eliminando contenedores antiguos...'
+                    // Detener y eliminar el servicio 'pomodoroweb' si existe
+                    // Usamos || true para que el pipeline no falle si el contenedor no existe
+                    sh 'docker compose stop pomodoroweb || true' 
+                    sh 'docker compose rm -f pomodoroweb || true' 
+                    
+                    echo 'Desplegando el nuevo contenedor...'
+                    // Levanta el nuevo contenedor
+                    sh 'docker compose up -d pomodoroweb'
                 }
             }
         }
-    }
     
     post {
         success {
