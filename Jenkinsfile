@@ -17,35 +17,36 @@ pipeline {
         stage('Construcción (Build)') {
             steps {
                 script {
-                    echo 'Construye la imagen de Docker...'
+                    echo '🏗️ Construyendo la imagen de Docker...'
                     // Usamos el docker-compose que ya tienes configurado
                     sh 'docker compose build pomodoroweb'
                 }
             }
         }
 
-    stage('Despliegue (Deploy)') {
+        stage('Despliegue (Deploy)') {
             steps {
                 script {
-                    echo 'Deteniendo y eliminando contenedores antiguos...'
+                    echo ' Deteniendo y eliminando contenedores antiguos...'
                     // Detener y eliminar el servicio 'pomodoroweb' si existe
                     // Usamos || true para que el pipeline no falle si el contenedor no existe
                     sh 'docker compose stop pomodoroweb || true' 
-                    sh 'docker compose rm -f pomodoroweb || true' 
-                    
-                    echo 'Desplegando el nuevo contenedor...'
+                    sh 'docker compose rm -f pomodoroweb || true'
+
+                    echo ' Desplegando el nuevo contenedor...'
                     // Levanta el nuevo contenedor
                     sh 'docker compose up -d pomodoroweb'
                 }
             }
         }
+    }
     
     post {
         success {
             echo '¡Despliegue exitoso!'
         }
         failure {
-            echo 'Algo salió mal en el pipeline.'
+            echo ' Algo salió mal en el pipeline.'
         }
     }
 }
