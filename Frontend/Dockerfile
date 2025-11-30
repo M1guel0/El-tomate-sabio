@@ -6,4 +6,3 @@ COPY . /usr/share/nginx/html
 EXPOSE 80
 #comando por defecto. 
 CMD ["nginx", "-g", "daemon off;"]
-
