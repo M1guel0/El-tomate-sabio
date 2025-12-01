@@ -1,13 +1,5 @@
 pipeline {
     agent any 
-
-    // Definición de las herramientas necesarias
-    tools {
-        // Asumiendo que Docker está disponible en el agente de Jenkins (servidor)
-        // Y que tiene acceso a los comandos de Docker y docker-compose.
-        // Esto es necesario porque el contenedor de Jenkins debe poder comunicarse con el daemon de Docker del host.
-        // Vemos que en tu docker-compose.yml montaste: /var/run/docker.sock:/var/run/docker.sock, lo cual es correcto.
-    }
     
     // Se definen las variables de entorno para usar en el pipeline
     environment {
