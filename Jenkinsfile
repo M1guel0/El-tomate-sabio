@@ -35,7 +35,7 @@ pipeline {
 
                     echo ' Desplegando el nuevo contenedor...'
                     // Levanta el nuevo contenedor
-                    sh 'docker compose up -d pomodoroweb'
+                    sh 'docker-compose up -d pomodoroweb'
                 }
             }
         }
