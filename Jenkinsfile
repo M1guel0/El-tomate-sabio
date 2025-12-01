@@ -46,14 +46,13 @@ pipeline {
             steps {
                 echo 'Desplegando la aplicación con docker-compose...'
                 script {
-                    // Navegar al directorio donde se encuentra el docker-compose.yml
                     dir("${env.DOCKER_COMPOSE_DIR}") {
-                        // Desplegar (o actualizar) los servicios.
-                        // --build: Opcional, pero asegura que cualquier cambio en Dockerfile se refleje.
-                        // -d: Modo detached (en segundo plano).
-                        // --up-to-date: Evita reconstruir si no hay cambios.
-                        sh 'docker-compose up -d --build --force-recreate' 
-                    }
+                    // **CAMBIAR ESTA LÍNEA**
+                        sh 'docker-compose up -d --build --force-recreate pomodoroweb' 
+                    // Al añadir 'pomodoroweb', solo intentará recrear ese servicio,
+                    // ignorando el servicio 'jenkins' y evitando más conflictos.
+                 
+        
                 }
             }
         }
