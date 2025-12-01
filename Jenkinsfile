@@ -2,8 +2,8 @@ pipeline {
     agent any 
 
     // Definición de las herramientas necesarias
-    // Se definen las variables de entorno para usar en el pipeline
     
+    // Se definen las variables de entorno para usar en el pipeline
     environment {
         // Nombre del servicio web definido en docker-compose.yml
         SERVICE_NAME = 'pomodoroweb' 
@@ -40,7 +40,6 @@ pipeline {
                 }
             }
         }
-        
         // 3. Desplegar con Docker Compose
         stage('Deploy with Docker Compose') {
             steps {
@@ -48,14 +47,13 @@ pipeline {
                 script {
                     dir("${env.DOCKER_COMPOSE_DIR}") {
                     // **CAMBIAR ESTA LÍNEA**
-                        sh 'docker-compose up -d --build --force-recreate pomodoroweb' 
+                    sh 'docker-compose up -d --build --force-recreate pomodoroweb' 
                     // Al añadir 'pomodoroweb', solo intentará recrear ese servicio,
                     // ignorando el servicio 'jenkins' y evitando más conflictos.
-                 
-        
                 }
             }
         }
+    }
 
         // 4. Verificación Post-Despliegue (Opcional, pero recomendado)
         stage('Post-Deployment Check') {
@@ -68,3 +66,9 @@ pipeline {
         }
     }
 }
+
+
+
+
+
+    
