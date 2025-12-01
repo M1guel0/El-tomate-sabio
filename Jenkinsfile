@@ -17,7 +17,7 @@ pipeline {
         stage('Construcción (Build)') {
             steps {
                 script {
-                    echo ' Construyendo la imagen de Docker...'
+                    echo '🏗️ Construyendo la imagen de Docker...'
                     // Usamos el docker-compose que ya tienes configurado
                     sh 'docker compose build pomodoroweb'
                 }
@@ -38,16 +38,17 @@ pipeline {
                     echo '🚀 Desplegando el nuevo contenedor...'
                     // Usamos up con --build para asegurarnos de que use la imagen recién construida.
                     sh 'docker compose up -d --build pomodoroweb'
+                }
             }
         }
     }
     
     post {
         success {
-            echo ' ¡Despliegue exitoso!'
+            echo '✅ ¡Despliegue exitoso!'
         }
         failure {
-            echo ' Algo salió mal en el pipeline.'
+            echo '❌ Algo salió mal en el pipeline.'
         }
     }
 }
