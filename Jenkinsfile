@@ -17,7 +17,7 @@ pipeline {
 
         stage('Test & Coverage') {
             agent {
-                docker { 
+                Docker { 
                     image 'node:16-alpine' 
                     args "-v $PWD:/app -w /app" // Monta la raíz del proyecto como /app
                 }
