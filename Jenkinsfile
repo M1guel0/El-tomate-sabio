@@ -31,7 +31,7 @@ pipeline {
                         sh 'npm install'
                         
                         // Ejecutar pruebas con Jest y generar reporte de cobertura
-                        sh 'npx jest --coverage --passWithNoTests'
+                        sh 'npx jest --coverage --config jest.config.js'
                         
                         // Opcional: Ver contenido del reporte generado
                         sh 'ls -la coverage/'

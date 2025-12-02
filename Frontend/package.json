@@ -1,15 +1,11 @@
 {
+  "name": "tu-proyecto",
+  "version": "1.0.0",
   "scripts": {
     "test": "jest --coverage",
-    "test:watch": "jest --watch"
+    "start": "node server.js"
   },
   "devDependencies": {
-    "jest": "^29.0.0",
-    "@types/jest": "^29.0.0"
-  },
-  "jest": {
-    "collectCoverage": true,
-    "coverageReporters": ["lcov", "text", "html"],
-    "coverageDirectory": "coverage"
+    "jest": "^29.0.0"
   }
 }
