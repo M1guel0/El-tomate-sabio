@@ -6,8 +6,7 @@ pipeline {
         DOCKER_COMPOSE_DIR = 'Frontend' 
         // Credenciales de Codecov (ID que configuraste en Jenkins)
         CODECOV_TOKEN = credentials('codecov-token')
-        // Variable para la ruta del workspace, esencial para montar volúmenes
-        WORKSPACE = pwd() 
+        // La variable WORKSPACE ya no es necesaria, usaremos la nativa $WORKSPACE.
     }
 
     stages {
@@ -22,11 +21,17 @@ pipeline {
         stage('Test & Coverage') {
             steps {
                 script {
-                    echo 'Ejecutando tests en contenedor Node.js (vía docker run)...'
+                    echo 'Ejecutando tests en contenedor Node.js (vía docker run con volumes-from)...'
+                    
+                    // Capturamos el ID del contenedor Jenkins actual.
+                    def jenkinsContainerId = sh(returnStdout: true, script: 'echo $HOSTNAME').trim()
                     
                     // Definimos los comandos de prueba en una variable
                     def testCommands = """
                         set -e  # Detiene el script si cualquier comando falla
+                        
+                        echo "Contenido de la carpeta de trabajo (\$PWD):"
+                        ls -a # Muestra los archivos para confirmar que package.json está ahí
                         
                         # 1. Ejecutar en el directorio /app (que es el workspace de Jenkins)
                         npm install
@@ -42,13 +47,11 @@ pipeline {
                         ./codecov -t ${env.CODECOV_TOKEN}
                     """
                     
-                    // Ejecutamos docker run:
-                    // --rm: elimina el contenedor al finalizar
-                    // -v $WORKSPACE:/app: monta la carpeta actual de Jenkins en /app
-                    // -w /app: establece /app como directorio de trabajo
-                    // node:16-alpine: la imagen que necesitamos para npm/Jest
-                    // /bin/sh -c '...': ejecuta nuestros comandos
-                    sh "docker run --rm -v ${env.WORKSPACE}:/app -w /app node:16-alpine /bin/sh -c '${testCommands}'"
+                    // EJECUCIÓN CRÍTICA:
+                    // --volumes-from ${jenkinsContainerId}: Monta el workspace de Jenkins en el nuevo contenedor.
+                    // -w $WORKSPACE: Establece el directorio de trabajo al mismo que usa Jenkins (/var/jenkins_home/workspace/Jenkins1).
+                    // Esto resuelve el error "ENOENT: no such file or directory" 
+                    sh "docker run --rm --volumes-from ${jenkinsContainerId} -w \$WORKSPACE node:16-alpine /bin/sh -c '${testCommands}'"
                 }
             }
         }
