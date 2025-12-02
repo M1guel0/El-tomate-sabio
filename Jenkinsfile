@@ -24,7 +24,7 @@ pipeline {
         stage('Test & Coverage') {
             agent {
                 // Usamos un contenedor Node.js para ejecutar los tests
-                docker { 
+                Docker { 
                     image 'node:16-alpine' 
                     // Montamos el workspace de Jenkins como /app dentro del contenedor
                     args "-v $PWD:/app -w /app" 
