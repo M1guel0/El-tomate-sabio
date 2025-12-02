@@ -1,20 +1,3 @@
-// Agrega esta función al final de timer_Pomodoro.js para facilitar el testing
-function secondsToMinutes(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-}
-
-// Para que Jest pueda importarla:
-module.exports = {
-    secondsToMinutes: secondsToMinutes,
-    PomodoroTimer: PomodoroTimer
-    // Aquí puedes exportar cualquier otra función de tu clase que quieras testear
-};
-
-// ... (El resto de tu código de la clase PomodoroTimer)
-// Inicializar la aplicación
-
 class PomodoroTimer {
     constructor() {
         this.workTime = 25 * 60; // 25 minutos en segundos
@@ -370,4 +353,3 @@ class PomodoroTimer {
 
 }
 const app = new PomodoroTimer();
-
