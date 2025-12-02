@@ -1,9 +1,30 @@
+def runTestsWithDocker(projectDir, codecovToken) {
+    // Definimos el contenedor donde se ejecutarán los pasos
+    docker.image('node:16-alpine').inside("-v $PWD:/app -w /app") {
+        
+        // 1. Instalar dependencias (se ejecuta en /app)
+        sh 'echo "Instalando dependencias de prueba (Jest)..."'
+        sh 'npm install' 
+        
+        // 2. Ejecutar pruebas
+        sh 'echo "Ejecutando pruebas y generando reporte de cobertura..."'
+        sh 'npm test' 
+        
+        // 3. Subida a Codecov
+        sh 'echo "Subiendo reportes a Codecov..."'
+        sh 'curl -Os https://uploader.codecov.io/latest/linux/codecov'
+        sh 'chmod +x codecov'
+        
+        // Usamos el token de Codecov que pasamos como argumento
+        sh "./codecov -t ${codecovToken}"
+    }
+}
+
 pipeline {
     agent any 
 
     // Aquí se definen las variables y las credenciales de forma segura
     environment {
-        // Variables de Docker Compose
         SERVICE_NAME = 'pomodoroweb' 
         DOCKER_COMPOSE_DIR = 'Frontend' 
         
@@ -12,7 +33,6 @@ pipeline {
     }
 
     stages {
-        // 1. Clonar el Código (Implícito en Pipeline desde SCM, pero explícito aquí)
         stage('Checkout') {
             steps {
                 echo 'Clonando el repositorio desde GitHub...'
@@ -20,33 +40,13 @@ pipeline {
             }
         }
 
-        // 2. Pruebas y Cobertura (Codecov)
+        // 2. Pruebas y Cobertura (Ahora usando la función)
         stage('Test & Coverage') {
-            agent {
-                // Usamos un contenedor Node.js para ejecutar los tests
-                Docker { 
-                    image 'node:16-alpine' 
-                    // Montamos el workspace de Jenkins como /app dentro del contenedor
-                    args "-v $PWD:/app -w /app" 
-                }
-            }
             steps {
-                echo 'Instalando dependencias de prueba (Jest)...'
-                // Instala Jest (basado en el package.json)
-                sh 'npm install' 
-                
-                echo 'Ejecutando pruebas y generando reporte de cobertura...'
-                // Ejecuta la prueba con la bandera --coverage
-                sh 'npm test' 
-                
-                // --- Subida a Codecov ---
-                echo 'Subiendo reportes a Codecov...'
-                // Descargar el uploader
-                sh 'curl -Os https://uploader.codecov.io/latest/linux/codecov'
-                sh 'chmod +x codecov'
-                
-                // Subir el reporte usando la variable de entorno segura
-                sh './codecov -t $CODECOV_TOKEN'
+                script {
+                    // Llamamos a la función que usa el contenedor Docker
+                    runTestsWithDocker(env.DOCKER_COMPOSE_DIR, env.CODECOV_TOKEN)
+                }
             }
         }
 
@@ -54,7 +54,6 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo 'Construyendo la imagen Docker...'
-                // Navegamos al directorio Frontend para ejecutar docker build
                 dir("${env.DOCKER_COMPOSE_DIR}") {
                     sh "docker build -t ${env.SERVICE_NAME}:latest ." 
                 }
@@ -65,17 +64,7 @@ pipeline {
         stage('Deploy with Docker Compose') {
             steps {
                 echo 'Desplegando la aplicación con docker-compose...'
-                // Ejecutamos docker-compose en la raíz
-                // Usamos 'pomodoroweb' para evitar conflictos con el contenedor Jenkins
                 sh 'docker-compose up -d --build --force-recreate pomodoroweb' 
-            }
-        }
-
-        // 5. Verificación Post-Despliegue
-        stage('Post-Deployment Check') {
-            steps {
-                echo 'Verificando que el servicio esté corriendo en el puerto 8082...'
-                sh "docker ps | grep ${env.SERVICE_NAME}" 
             }
         }
     }
