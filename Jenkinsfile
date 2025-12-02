@@ -1,100 +1,65 @@
 pipeline {
     agent any 
 
-    // Definición de las herramientas necesarias
-    
-    // Se definen las variables de entorno para usar en el pipeline
     environment {
-        // Nombre del servicio web definido en docker-compose.yml
         SERVICE_NAME = 'pomodoroweb' 
-        // Ubicación de la carpeta donde está el docker-compose.yml
         DOCKER_COMPOSE_DIR = 'Frontend'
+        // Jalamos la credencial que guardamos en Jenkins
         CODECOV_TOKEN = credentials('codecov-token')
     }
 
     stages {
-        // 1. Checkout (Clonar el Código)
         stage('Checkout') {
             steps {
-                // Esta instrucción es a menudo implícita cuando el Job es un "Pipeline" 
-                // configurado con SCM (como tu GitHub), pero es bueno tener el paso.
-                // En un pipeline de Jenkinsfile desde SCM, esta etapa normalmente solo usa
-                // 'checkout scm' para obtener el código.
-                echo 'Clonando el repositorio desde GitHub...'
-                // Si la configuración del job en Jenkins usa SCM (como tu GitHub project),
-                // esta línea se encarga de clonar el código en el workspace de Jenkins.
                 checkout scm 
             }
         }
 
+        // NUEVA ETAPA: Pruebas y Cobertura
         stage('Test & Coverage') {
             agent {
-                // Usamos una imagen de Node.js para tener npm y jest disponibles
                 docker { 
+                    // Usamos una imagen de Node temporal solo para probar el JS
                     image 'node:16-alpine' 
-                    // Montamos el directorio de trabajo actual
-                    args "-v $PWD:/app -w /app" 
+                    args '-u root'
                 }
             }
             steps {
-                echo 'Instalando dependencias de prueba...'
-                // Instala Jest y dependencias
-                sh 'npm install' 
-                
-                echo 'Ejecutando pruebas y generando reporte de cobertura...'
-                // Ejecuta Jest con la bandera --coverage para generar el reporte
+                echo 'Ejecutando pruebas...'
+                sh 'npm install'
                 sh 'npm test' 
-                
+                        
+                        // Una vez generados los reportes de cobertura, se suben:
                 echo 'Subiendo reportes a Codecov...'
-                script {
-                    // Instala el uploader de Codecov
-                    sh 'curl -Os https://uploader.codecov.io/latest/linux/codecov'
-                    sh 'chmod +x codecov'
+                        // Descargar el uploader de Codecov
+                sh 'curl -Os https://uploader.codecov.io/latest/linux/codecov'
+                sh 'chmod +x codecov'
+                sh './codecov -t $CODECOV_TOKEN'
                     
-                    // Sube el reporte generado (generalmente coverage/lcov.info)
-                    // Usamos el token guardado en el entorno
-                    sh './codecov -t $CODECOV_TOKEN'
-                }
+                
             }
         }
 
-        // 2. Construir la Imagen Docker
         stage('Build Docker Image') {
             steps {
-                echo 'Construyendo la imagen Docker...'
+                // ... tu código existente ...
                 script {
-                    // Navegar al directorio donde se encuentra el Dockerfile
+                     dir("${env.DOCKER_COMPOSE_DIR}") {
+                        sh "docker build -t ${env.SERVICE_NAME}:latest ."
+                     }
+                }
+            }
+        }
+        
+        stage('Deploy with Docker Compose') {
+            steps {
+                script {
                     dir("${env.DOCKER_COMPOSE_DIR}") {
-                        // Construir la imagen basada en el Dockerfile de la carpeta 'Frontend'
-                        // y nombrarla para que docker-compose la reconozca.
-                        sh "docker build -t ${env.SERVICE_NAME}:latest ." 
+                        // Recuerda usar el nombre específico para evitar conflictos
+                        sh 'docker-compose up -d --build --force-recreate pomodoroweb' 
                     }
                 }
             }
         }
-        // 3. Desplegar con Docker Compose
-        stage('Deploy with Docker Compose') {
-            steps {
-                echo 'Desplegando la aplicación con docker-compose...'
-                script {
-                    dir("${env.DOCKER_COMPOSE_DIR}") {
-                    // **CAMBIAR ESTA LÍNEA**
-                    sh 'docker-compose up -d --build --force-recreate pomodoroweb' 
-                    // Al añadir 'pomodoroweb', solo intentará recrear ese servicio,
-                    // ignorando el servicio 'jenkins' y evitando más conflictos.
-                }
-            }
-        }
     }
-
-        // 4. Verificación Post-Despliegue (Opcional, pero recomendado)
-        stage('Post-Deployment Check') {
-            steps {
-                echo 'Verificando que el servicio esté corriendo en el puerto 8082...'
-                // Verificar que el contenedor esté arriba. Puedes refinar esto con una
-                // llamada CURL al puerto 8082 si tienes CURL instalado en el agente.
-                sh "docker ps | grep ${env.SERVICE_NAME}" 
-            }
-        }
-    }
-}   
+}
