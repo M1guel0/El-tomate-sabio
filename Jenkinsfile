@@ -16,54 +16,78 @@ pipeline {
         // 1. Checkout (Clonar el Código)
         stage('Checkout') {
             steps {
-                // Esta instrucción es a menudo implícita cuando el Job es un "Pipeline" 
-                // configurado con SCM (como tu GitHub), pero es bueno tener el paso.
-                // En un pipeline de Jenkinsfile desde SCM, esta etapa normalmente solo usa
-                // 'checkout scm' para obtener el código.
                 echo 'Clonando el repositorio desde GitHub...'
-                // Si la configuración del job en Jenkins usa SCM (como tu GitHub project),
-                // esta línea se encarga de clonar el código en el workspace de Jenkins.
                 checkout scm 
             }
         }
 
-        // 2. Construir la Imagen Docker
+        // 2. Instalar dependencias y ejecutar pruebas con cobertura
+        stage('Run Tests with Coverage') {
+            steps {
+                echo 'Instalando dependencias y ejecutando pruebas...'
+                script {
+                    dir("${env.DOCKER_COMPOSE_DIR}") {
+                        // Instalar dependencias (si usas npm)
+                        sh 'npm install'
+                        
+                        // Ejecutar pruebas con Jest y generar reporte de cobertura
+                        sh 'npx jest --coverage'
+                        
+                        // Opcional: Ver contenido del reporte generado
+                        sh 'ls -la coverage/'
+                    }
+                }
+            }
+        }
+
+        // 3. Subir reporte a Codecov
+        stage('Upload to Codecov') {
+            steps {
+                echo 'Subiendo reporte de cobertura a Codecov...'
+                script {
+                    dir("${env.DOCKER_COMPOSE_DIR}") {
+                        // Usar el token de Codecov configurado en Jenkins
+                        // El reporte se encuentra en coverage/lcov.info
+                        sh """
+                            curl -Os https://uploader.codecov.io/latest/linux/codecov
+                            chmod +x codecov
+                            ./codecov -t \${CODECOV_TOKEN} -f coverage/lcov.info
+                        """
+                    }
+                }
+            }
+        }
+
+        // 4. Construir la Imagen Docker
         stage('Build Docker Image') {
             steps {
                 echo 'Construyendo la imagen Docker...'
                 script {
-                    // Navegar al directorio donde se encuentra el Dockerfile
                     dir("${env.DOCKER_COMPOSE_DIR}") {
-                        // Construir la imagen basada en el Dockerfile de la carpeta 'Frontend'
-                        // y nombrarla para que docker-compose la reconozca.
                         sh "docker build -t ${env.SERVICE_NAME}:latest ." 
                     }
                 }
             }
         }
-        // 3. Desplegar con Docker Compose
+        
+        // 5. Desplegar con Docker Compose
         stage('Deploy with Docker Compose') {
             steps {
                 echo 'Desplegando la aplicación con docker-compose...'
                 script {
                     dir("${env.DOCKER_COMPOSE_DIR}") {
-                    // **CAMBIAR ESTA LÍNEA**
-                    sh 'docker-compose up -d --build --force-recreate pomodoroweb' 
-                    // Al añadir 'pomodoroweb', solo intentará recrear ese servicio,
-                    // ignorando el servicio 'jenkins' y evitando más conflictos.
+                        sh 'docker-compose up -d --build --force-recreate pomodoroweb' 
+                    }
                 }
             }
         }
-    }
 
-        // 4. Verificación Post-Despliegue (Opcional, pero recomendado)
+        // 6. Verificación Post-Despliegue (Opcional, pero recomendado)
         stage('Post-Deployment Check') {
             steps {
                 echo 'Verificando que el servicio esté corriendo en el puerto 8082...'
-                // Verificar que el contenedor esté arriba. Puedes refinar esto con una
-                // llamada CURL al puerto 8082 si tienes CURL instalado en el agente.
                 sh "docker ps | grep ${env.SERVICE_NAME}" 
             }
         }
     }
-}  
+}
