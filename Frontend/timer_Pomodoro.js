@@ -8,6 +8,7 @@ function secondsToMinutes(seconds) {
 // Para que Jest pueda importarla:
 module.exports = {
     secondsToMinutes: secondsToMinutes,
+    PomodoroTimer: PomodoroTimer
     // Aquí puedes exportar cualquier otra función de tu clase que quieras testear
 };
 
@@ -369,3 +370,4 @@ class PomodoroTimer {
 
 }
 const app = new PomodoroTimer();
+

@@ -1,7 +1,7 @@
 {
   "name": "el-tomate-sabio",
   "version": "1.0.0",
-  "description": "Pomodoro Timer Project",
+  "description": "Pomodoro Timer Project with CI/CD",
   "scripts": {
     "test": "jest --coverage"
   },
@@ -14,5 +14,10 @@
   "license": "ISC",
   "devDependencies": {
     "jest": "^29.7.0"
+  },
+  "jest": {
+    "testMatch": [
+      "**/Frontend/__tests__/**/*.js"
+    ]
   }
 }
