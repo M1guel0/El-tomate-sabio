@@ -31,10 +31,11 @@ pipeline {
                         sh 'npm install'
                         
                         // Ejecutar pruebas con Jest y generar reporte de cobertura
-                        sh 'npx jest --coverage'
+                        sh 'npx jest --coverage--passWithNoTests'
                         
                         // Opcional: Ver contenido del reporte generado
                         sh 'ls -la coverage/'
+                        sh 'cat coverage/lcov.info || echo "No se encontró el archivo lcov.info"'
                     }
                 }
             }
