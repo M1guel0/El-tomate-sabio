@@ -9,6 +9,7 @@ pipeline {
         SERVICE_NAME = 'pomodoroweb' 
         // Ubicación de la carpeta donde está el docker-compose.yml
         DOCKER_COMPOSE_DIR = 'Frontend'
+        CODECOV_TOKEN = credentials('codecov-token') // Ejemplo de uso de credenciales
     }
 
     stages {
