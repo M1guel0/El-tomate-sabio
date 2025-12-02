@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "test": "jest --coverage",
+    "test:watch": "jest --watch"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0"
+  },
+  "jest": {
+    "collectCoverage": true,
+    "coverageReporters": ["lcov", "text", "html"],
+    "coverageDirectory": "coverage"
+  }
+}
