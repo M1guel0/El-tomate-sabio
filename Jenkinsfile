@@ -1,86 +1,68 @@
 pipeline {
     agent any 
 
+    // Definición de las herramientas necesarias
+    
+    // Se definen las variables de entorno para usar en el pipeline
     environment {
+        // Nombre del servicio web definido en docker-compose.yml
         SERVICE_NAME = 'pomodoroweb' 
-        DOCKER_COMPOSE_DIR = 'Frontend' 
-        // Credenciales de Codecov (ID que configuraste en Jenkins)
-        CODECOV_TOKEN = credentials('codecov-token')
-        // La variable WORKSPACE ya no es necesaria, usaremos la nativa $WORKSPACE.
+        // Ubicación de la carpeta donde está el docker-compose.yml
+        DOCKER_COMPOSE_DIR = 'Frontend'
     }
 
     stages {
+        // 1. Checkout (Clonar el Código)
         stage('Checkout') {
             steps {
+                // Esta instrucción es a menudo implícita cuando el Job es un "Pipeline" 
+                // configurado con SCM (como tu GitHub), pero es bueno tener el paso.
+                // En un pipeline de Jenkinsfile desde SCM, esta etapa normalmente solo usa
+                // 'checkout scm' para obtener el código.
                 echo 'Clonando el repositorio desde GitHub...'
+                // Si la configuración del job en Jenkins usa SCM (como tu GitHub project),
+                // esta línea se encarga de clonar el código en el workspace de Jenkins.
                 checkout scm 
             }
         }
 
-        // 2. Pruebas y Cobertura (Codecov) - SOLUCIÓN ROBUSTA
-        stage('Test & Coverage') {
-            steps {
-                script {
-                    echo 'Ejecutando tests en contenedor Node.js (vía docker run con volumes-from)...'
-                    
-                    // Capturamos el ID del contenedor Jenkins actual.
-                    def jenkinsContainerId = sh(returnStdout: true, script: 'echo $HOSTNAME').trim()
-                    
-                    // Definimos los comandos de prueba en una variable
-                    def testCommands = """
-                        set -e  # Detiene el script si cualquier comando falla
-                        
-                        echo "Contenido de la carpeta de trabajo (\$PWD):"
-                        ls -a # Muestra los archivos para confirmar que package.json está ahí
-                        
-                        # 1. Ejecutar en el directorio /app (que es el workspace de Jenkins)
-                        npm install
-                        
-                        # 2. Ejecutar pruebas (genera el reporte de cobertura)
-                        npm test 
-                        
-                        # 3. Subida a Codecov
-                        curl -Os https://uploader.codecov.io/latest/linux/codecov
-                        chmod +x codecov
-                        
-                        # Subir el reporte usando el token
-                        ./codecov -t ${env.CODECOV_TOKEN}
-                    """
-                    
-                    // EJECUCIÓN CRÍTICA:
-                    // --volumes-from ${jenkinsContainerId}: Monta el workspace de Jenkins en el nuevo contenedor.
-                    // -w $WORKSPACE: Establece el directorio de trabajo al mismo que usa Jenkins (/var/jenkins_home/workspace/Jenkins1).
-                    // Esto resuelve el error "ENOENT: no such file or directory" 
-                    sh "docker run --rm --volumes-from ${jenkinsContainerId} -w \$WORKSPACE node:16-alpine /bin/sh -c '${testCommands}'"
-                }
-            }
-        }
-
-        // 3. Construir la Imagen Docker
+        // 2. Construir la Imagen Docker
         stage('Build Docker Image') {
             steps {
                 echo 'Construyendo la imagen Docker...'
-                dir("${env.DOCKER_COMPOSE_DIR}") {
-                    sh "docker build -t ${env.SERVICE_NAME}:latest ." 
+                script {
+                    // Navegar al directorio donde se encuentra el Dockerfile
+                    dir("${env.DOCKER_COMPOSE_DIR}") {
+                        // Construir la imagen basada en el Dockerfile de la carpeta 'Frontend'
+                        // y nombrarla para que docker-compose la reconozca.
+                        sh "docker build -t ${env.SERVICE_NAME}:latest ." 
+                    }
                 }
             }
         }
-        
-        // 4. Desplegar con Docker Compose
+        // 3. Desplegar con Docker Compose
         stage('Deploy with Docker Compose') {
             steps {
                 echo 'Desplegando la aplicación con docker-compose...'
-                // Ejecutamos docker-compose en la raíz
-                sh 'docker-compose up -d --build --force-recreate pomodoroweb' 
+                script {
+                    dir("${env.DOCKER_COMPOSE_DIR}") {
+                    // **CAMBIAR ESTA LÍNEA**
+                    sh 'docker-compose up -d --build --force-recreate pomodoroweb' 
+                    // Al añadir 'pomodoroweb', solo intentará recrear ese servicio,
+                    // ignorando el servicio 'jenkins' y evitando más conflictos.
+                }
             }
         }
+    }
 
-        // 5. Verificación Post-Despliegue
+        // 4. Verificación Post-Despliegue (Opcional, pero recomendado)
         stage('Post-Deployment Check') {
             steps {
                 echo 'Verificando que el servicio esté corriendo en el puerto 8082...'
+                // Verificar que el contenedor esté arriba. Puedes refinar esto con una
+                // llamada CURL al puerto 8082 si tienes CURL instalado en el agente.
                 sh "docker ps | grep ${env.SERVICE_NAME}" 
             }
         }
     }
-}
+}  
