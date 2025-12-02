@@ -9,6 +9,7 @@ pipeline {
         SERVICE_NAME = 'pomodoroweb' 
         // Ubicación de la carpeta donde está el docker-compose.yml
         DOCKER_COMPOSE_DIR = 'Frontend'
+        CODECOV_TOKEN = credentials('codecov-token')
     }
 
     stages {
@@ -23,6 +24,37 @@ pipeline {
                 // Si la configuración del job en Jenkins usa SCM (como tu GitHub project),
                 // esta línea se encarga de clonar el código en el workspace de Jenkins.
                 checkout scm 
+            }
+        }
+
+        stage('Test & Coverage') {
+            agent {
+                // Usamos una imagen de Node.js para tener npm y jest disponibles
+                docker { 
+                    image 'node:16-alpine' 
+                    // Montamos el directorio de trabajo actual
+                    args "-v $PWD:/app -w /app" 
+                }
+            }
+            steps {
+                echo 'Instalando dependencias de prueba...'
+                // Instala Jest y dependencias
+                sh 'npm install' 
+                
+                echo 'Ejecutando pruebas y generando reporte de cobertura...'
+                // Ejecuta Jest con la bandera --coverage para generar el reporte
+                sh 'npm test' 
+                
+                echo 'Subiendo reportes a Codecov...'
+                script {
+                    // Instala el uploader de Codecov
+                    sh 'curl -Os https://uploader.codecov.io/latest/linux/codecov'
+                    sh 'chmod +x codecov'
+                    
+                    // Sube el reporte generado (generalmente coverage/lcov.info)
+                    // Usamos el token guardado en el entorno
+                    sh './codecov -t $CODECOV_TOKEN'
+                }
             }
         }
 
