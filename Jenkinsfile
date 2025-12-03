@@ -2,7 +2,6 @@ pipeline {
     agent any 
 
     // Definición de las herramientas necesarias
-    
     // Se definen las variables de entorno para usar en el pipeline
     environment {
         // Nombre del servicio web definido en docker-compose.yml
@@ -27,7 +26,7 @@ pipeline {
                 echo 'Instalando dependencias y ejecutando pruebas...'
                 script {
                     dir("${env.DOCKER_COMPOSE_DIR}") {
-                        // Instalar dependencias (si usas npm)
+                        // Instalar dependencias npm
                         sh 'npm install'
                         
                         // Ejecutar pruebas con Jest y generar reporte de cobertura
