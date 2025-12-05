@@ -1,6 +1,5 @@
 pipeline {
     agent any 
-
     // Definición de las herramientas necesarias
     // Se definen las variables de entorno para usar en el pipeline
     environment {
